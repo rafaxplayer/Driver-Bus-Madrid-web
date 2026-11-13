@@ -241,10 +241,17 @@
     .visual {
       position: relative;
       display: grid;
-      min-height: 420px;
       align-items: center;
       justify-items: center;
-      perspective: 1000px;
+    }
+
+    .hero-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid rgba(145, 177, 225, .2);
+      border-radius: 22px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .38);
     }
 
     .route-card {
@@ -559,7 +566,6 @@
       .hero { min-height: auto; }
       .hero-inner { grid-template-columns: 1fr; gap: 0; padding-top: 105px; }
       .hero-copy { padding: 62px 0 24px; }
-      .visual { min-height: 365px; }
       .route-card { max-width: 440px; }
       .visual-caption { right: 6%; bottom: 9px; }
       .route-content { grid-template-columns: 1fr; gap: 35px; }
@@ -580,7 +586,6 @@
       .hero-lede { font-size: 15px; }
       .hero-actions { gap: 9px; }
       .button { min-height: 45px; padding-inline: 14px; font-size: 12px; }
-      .visual { min-height: 310px; }
       .route-card { padding: 20px; border-radius: 19px; }
       .floating-tag { right: -3px; width: 67px; height: 67px; border-radius: 19px; }
       .floating-tag svg { width: 38px; height: 38px; }
@@ -649,29 +654,8 @@
           <p class="hero-note">Para conductores de autobús · Disponible en Android</p>
         </div>
 
-        <div class="visual" aria-label="Vista ilustrativa de una ruta de autobús">
-          <div class="route-card">
-            <div class="route-card-top">
-              <div class="line-number">27</div>
-              <div class="destination"><strong>Plaza de Castilla</strong><span>Embajadores</span></div>
-            </div>
-            <div class="route-label"><span>Navegación de línea</span><span>Ida · 27</span></div>
-            <div class="stops">
-              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Plaza de Castilla</div>
-              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Nuevos Ministerios</div>
-              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Cibeles / Paseo del Prado</div>
-              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Embajadores</div>
-            </div>
-            <div class="floating-tag" aria-hidden="true">
-              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 29V13a4 4 0 0 1 4-4h23a4 4 0 0 1 4 4v16H8Z"/>
-                <path d="M8 20h31M14 29v5m21-5v5"/>
-                <circle cx="15" cy="34" r="3"/><circle cx="34" cy="34" r="3"/>
-                <path d="M15 14h7m6 0h7"/>
-              </svg>
-            </div>
-          </div>
-          <span class="visual-caption">Ilustración de la navegación por una línea</span>
+        <div class="visual">
+          <img class="hero-image" src="assets/driver-bus-madrid-hero.jpg" alt="Autobús azul de EMT en una calle de Madrid junto a un móvil con una ruta de Driver Bus Madrid">
         </div>
       </div>
     </section>
@@ -687,7 +671,7 @@
           <article class="feature">
             <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z"/><path d="M9 4v13.5M15 6.5V20"/></svg></span>
             <h3>Guía durante el trayecto</h3>
-            <p>Oriéntate durante el servicio siguiendo el recorrido de la línea EMT que estás realizando.</p>
+            <p>Navegación GPS para seguir el recorrido de la línea EMT que estás realizando.</p>
           </article>
           <article class="feature">
             <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg></span>
@@ -727,12 +711,12 @@
       <div class="wrap route-content">
         <div class="route-copy">
           <span class="section-kicker">Una referencia para tu jornada</span>
-          <h2>Consulta tu recorrido</h2>
-          <p>Revisa el trazado de cada línea y las paradas correspondientes al sentido del servicio.</p>
+          <h2>¡No más pérdidas!</h2>
+          <p>Revisa el recorrido de cada línea y las paradas correspondientes al sentido del servicio.</p>
           <div class="route-points">
             <div class="route-point"><span class="check" aria-hidden="true">✓</span><span>Visualiza el recorrido de tu línea EMT.</span></div>
             <div class="route-point"><span class="check" aria-hidden="true">✓</span><span>Consulta las paradas en orden, de ida y vuelta.</span></div>
-            <div class="route-point"><span class="check" aria-hidden="true">✓</span><span>Información de la línea como apoyo durante tu jornada.</span></div>
+            <div class="route-point"><span class="check" aria-hidden="true">✓</span><span>Recorre la línea con tecnología GPS sin más pérdidas.</span></div>
           </div>
         </div>
         <div class="mini-map" role="img" aria-label="Ilustración de un mapa de ruta con paradas">
