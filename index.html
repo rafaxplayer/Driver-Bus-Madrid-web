@@ -539,7 +539,13 @@
     .download-copy { position: relative; z-index: 1; max-width: 560px; }
     .download-copy h2 { margin: 0 0 11px; font-size: clamp(28px, 3.5vw, 39px); }
     .download-copy p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
-    .download-action { position: relative; z-index: 1; flex: none; }
+    .download-card-visual {
+      position: relative;
+      z-index: 1;
+      flex: 0 1 42%;
+      width: 42%;
+      max-width: 460px;
+    }
 
     footer {
       border-top: 1px solid rgba(176, 203, 242, .1);
@@ -560,6 +566,12 @@
     .footer-links { display: flex; flex-wrap: wrap; gap: 19px; }
     .footer-links a { color: #aab8cf; text-decoration: none; }
     .footer-links a:hover { color: var(--cyan); }
+    .footer-links .footer-download {
+      min-height: 40px;
+      padding-inline: 14px;
+      color: #fff;
+    }
+    .footer-links .footer-download:hover { color: #fff; }
     .legal { max-width: 650px; margin: 0; }
 
     @media (max-width: 820px) {
@@ -599,6 +611,7 @@
       .mini-map { min-height: 260px; }
       .download { padding-block: 0 76px; }
       .download-card { align-items: flex-start; flex-direction: column; padding: 30px 24px; }
+      .download-card-visual { width: 100%; max-width: none; flex-basis: auto; }
       .footer-inner { align-items: flex-start; flex-direction: column; }
     }
 
@@ -742,10 +755,21 @@
             <h2>Tu línea, siempre a mano</h2>
             <p>Descarga Driver Bus Madrid y consulta recorridos, paradas e incidencias durante el servicio.</p>
           </div>
-          <a class="button button-primary download-action" href="https://play.google.com/store/apps/details?id=com.driverbusmadrid.app" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 3.8 14.8 12 5 20.2V3.8Z" fill="currentColor"/><path d="m15.4 12 3.3-2.7a1.8 1.8 0 0 1 0 5.4L15.4 12Z" fill="currentColor" opacity=".72"/></svg>
-            Descargar en Google Play
-          </a>
+          <div class="download-card-visual">
+            <div class="route-card" role="group" aria-label="Recorrido de la línea 27, de Plaza de Castilla a Embajadores">
+              <div class="route-card-top">
+                <div class="line-number">27</div>
+                <div class="destination"><strong>Plaza de Castilla</strong><span>Embajadores</span></div>
+              </div>
+              <div class="route-label"><span>Navegación de línea</span><span>Ida · 27</span></div>
+              <div class="stops">
+                <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Plaza de Castilla</div>
+                <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Nuevos Ministerios</div>
+                <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Cibeles / Paseo del Prado</div>
+                <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Embajadores</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -755,7 +779,7 @@
     <div class="wrap footer-inner">
       <p class="legal">Driver Bus Madrid es una aplicación independiente y no está afiliada ni asociada a EMT Madrid, al Consorcio Regional de Transportes de Madrid ni a ninguna entidad pública. Los datos se obtienen de la API oficial de EMT Madrid.</p>
       <div class="footer-links">
-        <a href="https://play.google.com/store/apps/details?id=com.driverbusmadrid.app" target="_blank" rel="noopener noreferrer">Google Play ↗</a>
+        <a class="button button-primary footer-download" href="https://play.google.com/store/apps/details?id=com.driverbusmadrid.app" target="_blank" rel="noopener noreferrer">Descargar en Google Play</a>
         <a href="https://datos.emtmadrid.es/" target="_blank" rel="noopener noreferrer">Datos EMT Madrid ↗</a>
         <a href="#inicio">Volver arriba ↑</a>
       </div>
