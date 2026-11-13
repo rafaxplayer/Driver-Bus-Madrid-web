@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081226">
+  <meta name="description" content="Navegación en tiempo real para conductores por las líneas de autobús de EMT Madrid. Sigue el recorrido y consulta paradas e información de servicio.">
+  <title>Driver Bus Madrid — Navegación en tiempo real EMT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f7faff;
+      --muted: #a7b8d5;
+      --navy: #081226;
+      --panel: #101f3e;
+      --panel-light: #17294b;
+      --line: rgba(145, 177, 225, .16);
+      --cyan: #00d5ff;
+      --blue: #078cff;
+      --green: #27d789;
+      --max-width: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--navy);
+      color: var(--ink);
+      font-family: "DM Sans", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    .wrap {
+      width: min(var(--max-width), calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .topbar {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 2;
+      height: 82px;
+      border-bottom: 1px solid rgba(176, 203, 242, .1);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border: 1px solid rgba(0, 213, 255, .3);
+      border-radius: 12px;
+      background: rgba(0, 150, 255, .13);
+      color: var(--cyan);
+    }
+
+    .brand-icon svg { width: 22px; height: 22px; }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      color: #c2cde0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .nav a { text-decoration: none; transition: color .2s ease; }
+    .nav a:hover { color: var(--cyan); }
+
+    .nav .nav-cta {
+      padding: 11px 16px;
+      border: 1px solid rgba(0, 213, 255, .35);
+      border-radius: 10px;
+      color: var(--cyan);
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      min-height: 690px;
+      align-items: center;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(ellipse at 78% 39%, rgba(0, 145, 255, .27), transparent 34%),
+        radial-gradient(ellipse at 86% 85%, rgba(23, 54, 113, .58), transparent 46%),
+        linear-gradient(118deg, #080f20 2%, #0c1935 54%, #11244b 100%);
+    }
+
+    .hero::after {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(8, 18, 38, .08), transparent 70%);
+      content: "";
+      pointer-events: none;
+    }
+
+    .route-art {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: .8;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 28px;
+      padding-top: 82px;
+    }
+
+    .hero-copy { position: relative; z-index: 1; padding-block: 54px; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 13px;
+      border: 1px solid rgba(0, 213, 255, .35);
+      border-radius: 999px;
+      background: rgba(0, 173, 255, .08);
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 213, 255, .65);
+    }
+
+    h1 {
+      max-width: 580px;
+      margin: 23px 0 16px;
+      font-size: clamp(48px, 6.4vw, 78px);
+      font-weight: 800;
+      letter-spacing: -.075em;
+      line-height: .98;
+    }
+
+    h1 span {
+      display: block;
+      background: linear-gradient(90deg, var(--cyan), #168bff 75%);
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-lede {
+      max-width: 490px;
+      margin: 0;
+      color: #b5c5df;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 29px;
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 19px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+    .button svg { width: 18px; height: 18px; flex: none; }
+
+    .button-primary {
+      background: linear-gradient(105deg, #00c8f4, #0879ff);
+      box-shadow: 0 10px 28px rgba(0, 133, 255, .25);
+      color: #fff;
+    }
+
+    .button-primary:hover { box-shadow: 0 14px 34px rgba(0, 133, 255, .38); }
+
+    .button-secondary {
+      border-color: rgba(163, 190, 231, .22);
+      background: rgba(255, 255, 255, .045);
+      color: #e4edfb;
+    }
+
+    .button-secondary:hover { border-color: rgba(0, 213, 255, .5); }
+
+    .hero-note {
+      margin: 13px 0 0 3px;
+      color: #7f93b5;
+      font-size: 11px;
+    }
+
+    .visual {
+      position: relative;
+      display: grid;
+      min-height: 420px;
+      align-items: center;
+      justify-items: center;
+      perspective: 1000px;
+    }
+
+    .route-card {
+      position: relative;
+      width: min(100%, 455px);
+      padding: 27px 27px 24px;
+      transform: rotate(-3deg);
+      border: 1px solid rgba(0, 198, 255, .25);
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(12, 24, 45, .96), rgba(11, 24, 48, .9));
+      box-shadow: 0 28px 80px rgba(0, 0, 0, .36), inset 0 1px 0 rgba(255, 255, 255, .06);
+    }
+
+    .route-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 21px;
+      border-bottom: 1px solid rgba(164, 192, 230, .15);
+    }
+
+    .line-number {
+      display: grid;
+      width: 55px;
+      height: 49px;
+      place-items: center;
+      border-radius: 13px;
+      background: linear-gradient(145deg, #087dff, #0055c8);
+      box-shadow: 0 8px 22px rgba(0, 105, 255, .25);
+      color: white;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .destination { text-align: right; }
+    .destination strong { display: block; font-size: 15px; }
+    .destination span { display: block; margin-top: 4px; color: #8192ad; font-size: 11px; }
+
+    .route-label {
+      display: flex;
+      justify-content: space-between;
+      margin: 14px 0 9px;
+      color: #8093b3;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .route-label span:last-child { color: var(--cyan); }
+
+    .stops { position: relative; display: grid; gap: 0; }
+
+    .stops::before {
+      position: absolute;
+      top: 17px;
+      bottom: 17px;
+      left: 9px;
+      width: 2px;
+      background: linear-gradient(var(--cyan), #087dff 55%, var(--green));
+      content: "";
+    }
+
+    .stop {
+      position: relative;
+      display: flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 14px;
+      color: #e7eefb;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stop-dot {
+      z-index: 1;
+      width: 19px;
+      height: 19px;
+      flex: none;
+      border: 4px solid #142540;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 213, 255, .55);
+    }
+
+    .stop:nth-child(2) .stop-dot {
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(39, 215, 137, .45);
+    }
+
+    .floating-tag {
+      position: absolute;
+      right: -14px;
+      bottom: -11px;
+      display: grid;
+      width: 82px;
+      height: 82px;
+      place-items: center;
+      transform: rotate(9deg);
+      border: 1px solid rgba(255, 255, 255, .23);
+      border-radius: 23px;
+      background: linear-gradient(145deg, #08a3ff, #00b8ed);
+      box-shadow: 0 18px 38px rgba(0, 153, 255, .38);
+      color: white;
+    }
+
+    .floating-tag svg { width: 46px; height: 46px; }
+
+    .visual-caption {
+      position: absolute;
+      right: 3%;
+      bottom: 22px;
+      color: #8297b9;
+      font-size: 11px;
+    }
+
+    .section { padding-block: 104px; }
+
+    .section-heading {
+      max-width: 610px;
+      margin: 0 auto 50px;
+      text-align: center;
+    }
+
+    .section-kicker {
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 14px 0 13px;
+      font-size: clamp(31px, 4vw, 45px);
+      letter-spacing: -.06em;
+      line-height: 1.08;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .features { background: linear-gradient(180deg, #0b1730, #0a1429); }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .feature {
+      min-height: 218px;
+      padding: 27px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(22, 40, 73, .66), rgba(14, 28, 53, .58));
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .feature:hover { transform: translateY(-4px); border-color: rgba(0, 213, 255, .32); }
+
+    .feature-icon {
+      display: grid;
+      width: 43px;
+      height: 43px;
+      place-items: center;
+      border: 1px solid rgba(0, 213, 255, .19);
+      border-radius: 13px;
+      background: rgba(0, 163, 255, .1);
+      color: var(--cyan);
+    }
+
+    .feature-icon svg { width: 21px; height: 21px; }
+    .feature h3 { margin: 20px 0 8px; font-size: 16px; letter-spacing: -.02em; }
+    .feature p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+    .route-section { overflow: hidden; }
+
+    .route-content {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      align-items: center;
+      gap: 80px;
+    }
+
+    .route-copy .section-kicker { display: inline-block; }
+    .route-copy h2 { max-width: 440px; margin-top: 16px; }
+    .route-copy > p { max-width: 450px; color: var(--muted); font-size: 15px; line-height: 1.8; }
+
+    .route-points { display: grid; gap: 16px; margin-top: 29px; }
+
+    .route-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: #dce7f7;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .check {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      flex: none;
+      place-items: center;
+      margin-top: 1px;
+      border-radius: 50%;
+      background: rgba(0, 213, 255, .12);
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mini-map {
+      position: relative;
+      min-height: 360px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background:
+        radial-gradient(ellipse at 80% 10%, rgba(0, 147, 255, .2), transparent 42%),
+        linear-gradient(145deg, #101f3d, #0d1a34);
+    }
+
+    .mini-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .map-chip {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 13px;
+      border: 1px solid rgba(159, 188, 228, .18);
+      border-radius: 11px;
+      background: rgba(9, 20, 40, .9);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .18);
+      color: #eaf2ff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .map-chip::before { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); content: ""; }
+    .map-chip.one { top: 18%; left: 8%; }
+    .map-chip.two { top: 59%; right: 7%; }
+    .map-chip.three { bottom: 10%; left: 19%; }
+
+    .download {
+      padding-block: 20px 105px;
+    }
+
+    .download-card {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      overflow: hidden;
+      padding: 45px 52px;
+      border: 1px solid rgba(0, 213, 255, .24);
+      border-radius: 24px;
+      background:
+        radial-gradient(ellipse at 90% 50%, rgba(0, 145, 255, .2), transparent 38%),
+        linear-gradient(115deg, #10213f, #111e3a);
+    }
+
+    .download-card::after {
+      position: absolute;
+      top: -130px;
+      right: 21%;
+      width: 360px;
+      height: 360px;
+      border: 1px solid rgba(0, 213, 255, .12);
+      border-radius: 50%;
+      box-shadow: 0 0 0 36px rgba(0, 213, 255, .025), 0 0 0 72px rgba(0, 213, 255, .02);
+      content: "";
+      pointer-events: none;
+    }
+
+    .download-copy { position: relative; z-index: 1; max-width: 560px; }
+    .download-copy h2 { margin: 0 0 11px; font-size: clamp(28px, 3.5vw, 39px); }
+    .download-copy p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .download-action { position: relative; z-index: 1; flex: none; }
+
+    footer {
+      border-top: 1px solid rgba(176, 203, 242, .1);
+      background: #070f20;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-block: 25px;
+      color: #8191ac;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .footer-links { display: flex; flex-wrap: wrap; gap: 19px; }
+    .footer-links a { color: #aab8cf; text-decoration: none; }
+    .footer-links a:hover { color: var(--cyan); }
+    .legal { max-width: 650px; margin: 0; }
+
+    @media (max-width: 820px) {
+      .hero { min-height: auto; }
+      .hero-inner { grid-template-columns: 1fr; gap: 0; padding-top: 105px; }
+      .hero-copy { padding: 62px 0 24px; }
+      .visual { min-height: 365px; }
+      .route-card { max-width: 440px; }
+      .visual-caption { right: 6%; bottom: 9px; }
+      .route-content { grid-template-columns: 1fr; gap: 35px; }
+      .mini-map { min-height: 310px; }
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+      .download-card { padding: 36px; }
+    }
+
+    @media (max-width: 560px) {
+      .wrap { width: min(var(--max-width), calc(100% - 36px)); }
+      .topbar { height: 70px; }
+      .nav { gap: 15px; font-size: 12px; }
+      .nav a:not(.nav-cta) { display: none; }
+      .nav .nav-cta { padding: 9px 12px; }
+      .hero-inner { padding-top: 70px; }
+      .hero-copy { padding: 54px 0 12px; }
+      h1 { font-size: clamp(48px, 13vw, 67px); }
+      .hero-lede { font-size: 15px; }
+      .hero-actions { gap: 9px; }
+      .button { min-height: 45px; padding-inline: 14px; font-size: 12px; }
+      .visual { min-height: 310px; }
+      .route-card { padding: 20px; border-radius: 19px; }
+      .floating-tag { right: -3px; width: 67px; height: 67px; border-radius: 19px; }
+      .floating-tag svg { width: 38px; height: 38px; }
+      .destination strong { font-size: 13px; }
+      .stop { min-height: 36px; font-size: 12px; }
+      .section { padding-block: 76px; }
+      .section-heading { margin-bottom: 34px; }
+      .feature-grid { grid-template-columns: 1fr; gap: 12px; }
+      .feature { min-height: auto; padding: 22px; }
+      .feature h3 { margin-top: 15px; }
+      .mini-map { min-height: 260px; }
+      .download { padding-block: 0 76px; }
+      .download-card { align-items: flex-start; flex-direction: column; padding: 30px 24px; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#inicio" aria-label="Driver Bus Madrid, inicio">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 16V6.8A2.8 2.8 0 0 1 7.8 4h8.4A2.8 2.8 0 0 1 19 6.8V16"/>
+            <path d="M5 11h14M7 16h10M8 19v-3m8 3v-3"/>
+            <circle cx="8" cy="18" r="1.4"/><circle cx="16" cy="18" r="1.4"/>
+          </svg>
+        </span>
+        <span>Driver Bus Madrid</span>
+      </a>
+      <nav class="nav" aria-label="Navegación principal">
+        <a href="#funciones">Funciones</a>
+        <a href="#rutas">Navegación</a>
+        <a class="nav-cta" href="https://play.google.com/store/apps/details?id=com.driverbusmadrid.app" target="_blank" rel="noopener noreferrer">Descargar app <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <svg class="route-art" viewBox="0 0 1440 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path d="M-70 585C165 560 300 413 514 358S883 232 1058 282s239 26 467-82" fill="none" stroke="#087fc2" stroke-width="4" stroke-dasharray="10 11" opacity=".58"/>
+        <path d="M-80 328c265-27 393-42 600 34s327 237 559 204 279-107 474-47" fill="none" stroke="#1245a0" stroke-width="3" opacity=".55"/>
+        <path d="M258-55c22 216 122 355 281 421s255 64 346 244 10 234 64 245" fill="none" stroke="#0877b8" stroke-width="2" opacity=".3"/>
+        <circle cx="510" cy="358" r="9" fill="#00d5ff" opacity=".8"/>
+        <circle cx="702" cy="428" r="7" fill="#1260df" opacity=".75"/>
+        <circle cx="1035" cy="283" r="8" fill="#00d5ff" opacity=".8"/>
+      </svg>
+
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="pulse" aria-hidden="true"></span> Navegación en tiempo real · EMT Madrid</div>
+          <h1>Navega tu línea.<span>En tiempo real.</span></h1>
+          <p class="hero-lede">Driver Bus Madrid ayuda a conductores a navegar en tiempo real por las líneas de EMT Madrid, seguir sus recorridos y consultar las paradas durante el servicio.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://play.google.com/store/apps/details?id=com.driverbusmadrid.app" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 3.8 14.8 12 5 20.2V3.8Z" fill="currentColor"/><path d="m15.4 12 3.3-2.7a1.8 1.8 0 0 1 0 5.4L15.4 12Z" fill="currentColor" opacity=".72"/></svg>
+              Descargar en Google Play
+            </a>
+            <a class="button button-secondary" href="#funciones">Ver funciones <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="hero-note">Para conductores de autobús · Disponible en Android</p>
+        </div>
+
+        <div class="visual" aria-label="Vista ilustrativa de una ruta de autobús">
+          <div class="route-card">
+            <div class="route-card-top">
+              <div class="line-number">27</div>
+              <div class="destination"><strong>Plaza de Castilla</strong><span>Embajadores</span></div>
+            </div>
+            <div class="route-label"><span>Navegación de línea</span><span>Ida · 27</span></div>
+            <div class="stops">
+              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Plaza de Castilla</div>
+              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Nuevos Ministerios</div>
+              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Cibeles / Paseo del Prado</div>
+              <div class="stop"><span class="stop-dot" aria-hidden="true"></span>Embajadores</div>
+            </div>
+            <div class="floating-tag" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 29V13a4 4 0 0 1 4-4h23a4 4 0 0 1 4 4v16H8Z"/>
+                <path d="M8 20h31M14 29v5m21-5v5"/>
+                <circle cx="15" cy="34" r="3"/><circle cx="34" cy="34" r="3"/>
+                <path d="M15 14h7m6 0h7"/>
+              </svg>
+            </div>
+          </div>
+          <span class="visual-caption">Ilustración de la navegación por una línea</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section features" id="funciones">
+      <div class="wrap">
+        <div class="section-heading">
+          <span class="section-kicker">Tu línea, paso a paso</span>
+          <h2>Navegación en tiempo real para tu servicio</h2>
+          <p>Sigue el recorrido de tu línea EMT y consulta la información del trayecto desde una herramienta pensada para conductores.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature">
+            <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z"/><path d="M9 4v13.5M15 6.5V20"/></svg></span>
+            <h3>Navegación en tiempo real</h3>
+            <p>Oriéntate durante el servicio siguiendo el recorrido de la línea EMT que estás realizando.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg></span>
+            <h3>Recorrido y paradas</h3>
+            <p>Consulta la secuencia de paradas y las referencias del itinerario en cada sentido de la línea.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4m0 3h.01"/></svg></span>
+            <h3>Avisos e incidencias</h3>
+            <p>Consulta avisos disponibles sobre incidencias, cambios de recorrido y desvíos del servicio.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18m4-14H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H7"/></svg></span>
+            <h3>Información de la línea</h3>
+            <p>Ten a mano el nombre oficial, distrito, dirección y código de cada parada.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A3.5 3.5 0 0 1 7.5 4h9A3.5 3.5 0 0 1 20 7.5v9a3.5 3.5 0 0 1-3.5 3.5h-9A3.5 3.5 0 0 1 4 16.5v-9Z"/><path d="M8 12h8m-4-4v8"/></svg></span>
+            <h3>Datos guardados</h3>
+            <p>Consulta rutas y datos de líneas guardadas aunque tengas poca cobertura.</p>
+          </article>
+          <article class="feature">
+            <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2m3-11v5h5"/></svg></span>
+            <h3>Diseñada para el día a día</h3>
+            <p>Interfaz clara y modo oscuro para consultar la información con comodidad a lo largo del día.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section route-section" id="rutas">
+      <div class="wrap route-content">
+        <div class="route-copy">
+          <span class="section-kicker">Una referencia para tu jornada</span>
+          <h2>Sigue el recorrido en tiempo real</h2>
+          <p>Navega por las líneas de EMT Madrid y consulta el trazado y las paradas correspondientes al sentido del servicio.</p>
+          <div class="route-points">
+            <div class="route-point"><span class="check" aria-hidden="true">✓</span><span>Navegación en tiempo real por las líneas de EMT Madrid.</span></div>
+            <div class="route-point"><span class="check" aria-hidden="true">✓</span><span>Consulta el recorrido de ida o vuelta y sus paradas en orden.</span></div>
+            <div class="route-point"><span class="check" aria-hidden="true">✓</span><span>Información de la línea como apoyo durante tu jornada.</span></div>
+          </div>
+        </div>
+        <div class="mini-map" role="img" aria-label="Ilustración de un mapa de ruta con paradas">
+          <svg viewBox="0 0 600 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <path d="M-30 260C105 228 115 147 226 161s112 117 209 77 103-155 207-150" fill="none" stroke="#1b3968" stroke-width="28" opacity=".48"/>
+            <path d="M-30 260C105 228 115 147 226 161s112 117 209 77 103-155 207-150" fill="none" stroke="#00c8f5" stroke-width="3.5" stroke-dasharray="8 8"/>
+            <path d="M60-20c30 111 123 119 141 205s-31 117 52 207M420-40c-22 104 48 155 79 209s3 121 56 196" fill="none" stroke="#243758" stroke-width="2"/>
+            <circle cx="115" cy="210" r="8" fill="#fff" stroke="#00d5ff" stroke-width="4"/>
+            <circle cx="226" cy="161" r="8" fill="#fff" stroke="#00d5ff" stroke-width="4"/>
+            <circle cx="435" cy="238" r="8" fill="#fff" stroke="#27d789" stroke-width="4"/>
+          </svg>
+          <span class="map-chip one">Plaza de Castilla</span>
+          <span class="map-chip two">Nuevos Ministerios</span>
+          <span class="map-chip three">Cibeles · Paseo del Prado</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="download" id="descargar">
+      <div class="wrap">
+        <div class="download-card">
+          <div class="download-copy">
+            <h2>Navega las líneas EMT en tiempo real</h2>
+            <p>Descarga Driver Bus Madrid y lleva la navegación de tu línea a mano durante el servicio.</p>
+          </div>
+          <a class="button button-primary download-action" href="https://play.google.com/store/apps/details?id=com.driverbusmadrid.app" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 3.8 14.8 12 5 20.2V3.8Z" fill="currentColor"/><path d="m15.4 12 3.3-2.7a1.8 1.8 0 0 1 0 5.4L15.4 12Z" fill="currentColor" opacity=".72"/></svg>
+            Descargar en Google Play
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <p class="legal">Driver Bus Madrid es una aplicación independiente y no está afiliada ni asociada a EMT Madrid, al Consorcio Regional de Transportes de Madrid ni a ninguna entidad pública. Los datos se obtienen de la API oficial de EMT Madrid.</p>
+      <div class="footer-links">
+        <a href="https://play.google.com/store/apps/details?id=com.driverbusmadrid.app" target="_blank" rel="noopener noreferrer">Google Play ↗</a>
+        <a href="https://datos.emtmadrid.es/" target="_blank" rel="noopener noreferrer">Datos EMT Madrid ↗</a>
+        <a href="#inicio">Volver arriba ↑</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
